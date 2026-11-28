@@ -14,7 +14,6 @@ docs = {
 }
 
 
-# TODO: Write a tool to read a doc
 @mcp.tool(
     name="read_doc_contents",
     description="Read the contents of a document and return it as a string.",
@@ -25,9 +24,38 @@ def read_document(doc_id: str = Field(description="ID of document to read")):
     return docs[doc_id]
 
 
-# TODO: Write a tool to edit a doc
-# TODO: Write a resource to return all doc id's
-# TODO: Write a resource to return the contents of a particular doc
+@mcp.tool(
+    name="edit_document",
+    description="Edit a document by replacing a string in the document.",
+)
+def edit_document(
+    doc_id: str = Field(description="ID of document to read"),
+    old_str: str = Field(description="Text to replace. Must match exactly."),
+    new_str: str = Field(description="New text to insert in place of the old text"),
+):
+    if doc_id not in docs:
+        return ValueError(f"Doc with ID {doc_id} not found")
+    docs[doc_id] = docs[doc_id].replace(old_str, new_str)
+
+
+@mcp.resource(
+    "docs://documents",
+    mime_type="application/json"
+)
+def list_docs() -> list[str]:
+    """Resource to return all doc IDs"""
+    return list(docs.keys())
+
+@mcp.resource(
+    "docs://documents/{doc_id}",
+    mime_type="text/plan"
+)
+def fetch_doc(doc_id: str) -> str:
+    """Resource to return the contents of a particular doc"""
+    if doc_id not in docs:
+        raise ValueError(f"Document with ID {doc_id} not found")
+    return docs[doc_id]
+
 # TODO: Write a prompt to rewrite a doc in markdown format
 # TODO: Write a prompt to summarize a doc
 
